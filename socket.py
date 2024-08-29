@@ -29,27 +29,34 @@ try:
         results = model(frame_rgb)
 
         for result in results:
-            boxes = result.boxes
-            for obj in boxes:
-                # Confirming that the object values are correctly extracted
-                class_id = int(obj.cls.item())  # Convert the class ID to an integer
-                class_name = model.names[class_id]
-                confidence = obj.conf.item()
-                bbox = obj.xyxy.tolist()
+            # `result.boxes` should be an iterable of detected objects
+            for obj in result.boxes:
+                # Debugging output to check the type and value of obj.cls and obj.conf
+                print(f"Type of obj.cls: {type(obj.cls)}, value: {obj.cls}")
+                print(f"Type of obj.conf: {type(obj.conf)}, value: {obj.conf}")
 
-                # Create a string with class name and confidence
-                detection_info = f"{class_name} {confidence:.2f}"
-                
-                # Send detected class and confidence information to the client
-                conn.sendall(detection_info.encode())
+                try:
+                    # Ensure proper extraction of values
+                    class_id = int(obj.cls.item())  # Convert the class ID to an integer
+                    class_name = model.names[class_id]
+                    confidence = obj.conf.item()
+                    bbox = obj.xyxy.tolist()
 
-                # Drawing bounding box and label (optional)
-                cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 255, 0), 2)
-                label = f"{class_name} {confidence:.2f}"
-                label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
-                cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), 
-                              (int(bbox[0]) + label_size[0], int(bbox[1]) - label_size[1]), (0, 255, 0), cv2.FILLED)
-                cv2.putText(frame, label, (int(bbox[0]), int(bbox[1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+                    # Create a string with class name and confidence
+                    detection_info = f"{class_name} {confidence:.2f}"
+                    
+                    # Send detected class and confidence information to the client
+                    conn.sendall(detection_info.encode())
+
+                    # Drawing bounding box and label (optional)
+                    cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), (int(bbox[2]), int(bbox[3])), (0, 255, 0), 2)
+                    label = f"{class_name} {confidence:.2f}"
+                    label_size, _ = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
+                    cv2.rectangle(frame, (int(bbox[0]), int(bbox[1])), 
+                                  (int(bbox[0]) + label_size[0], int(bbox[1]) - label_size[1]), (0, 255, 0), cv2.FILLED)
+                    cv2.putText(frame, label, (int(bbox[0]), int(bbox[1])), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 1)
+                except Exception as e:
+                    print(f"An error occurred: {e}")
 
         # Display the frame (optional)
         cv2.imshow("YOLOv8 Detection", frame)
@@ -61,6 +68,7 @@ finally:
     conn.close()
     server_socket.close()
     cv2.destroyAllWindows()
+
 
 
 
