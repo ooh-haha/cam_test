@@ -29,17 +29,16 @@ try:
         results = model(frame_rgb)
 
         for result in results:
-            # `result.boxes` should be an iterable of detected objects
             for obj in result.boxes:
                 # Debugging output to check the type and value of obj.cls and obj.conf
                 print(f"Type of obj.cls: {type(obj.cls)}, value: {obj.cls}")
                 print(f"Type of obj.conf: {type(obj.conf)}, value: {obj.conf}")
 
                 try:
-                    # Ensure proper extraction of values
-                    class_id = int(obj.cls.item())  # Convert the class ID to an integer
+                    # Handling potential tensor list by accessing the first element if it's a list
+                    class_id = int(obj.cls.item()) if obj.cls.numel() == 1 else int(obj.cls[0].item())
                     class_name = model.names[class_id]
-                    confidence = obj.conf.item()
+                    confidence = obj.conf.item() if obj.conf.numel() == 1 else obj.conf[0].item()
                     bbox = obj.xyxy.tolist()
 
                     # Create a string with class name and confidence
@@ -68,6 +67,7 @@ finally:
     conn.close()
     server_socket.close()
     cv2.destroyAllWindows()
+
 
 
 
