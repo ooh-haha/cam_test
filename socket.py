@@ -29,8 +29,9 @@ try:
         results = model(frame_rgb)
 
         for result in results:
-            for obj in result.boxes:
-                class_id = int(obj.cls)
+            boxes = result.boxes
+            for obj in boxes:
+                class_id = int(obj.cls.item())  # Here we ensure the correct type is passed
                 class_name = model.names[class_id]
                 confidence = obj.conf.item()
                 bbox = obj.xyxy.tolist()
@@ -59,6 +60,7 @@ finally:
     conn.close()
     server_socket.close()
     cv2.destroyAllWindows()
+
 
 
 
