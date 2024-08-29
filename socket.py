@@ -31,7 +31,8 @@ try:
         for result in results:
             boxes = result.boxes
             for obj in boxes:
-                class_id = int(obj.cls.item())  # Here we ensure the correct type is passed
+                # Confirming that the object values are correctly extracted
+                class_id = int(obj.cls.item())  # Convert the class ID to an integer
                 class_name = model.names[class_id]
                 confidence = obj.conf.item()
                 bbox = obj.xyxy.tolist()
@@ -60,6 +61,7 @@ finally:
     conn.close()
     server_socket.close()
     cv2.destroyAllWindows()
+
 
 
 
